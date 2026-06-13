@@ -133,6 +133,9 @@ export const usePresentationStore = create<PresentationState>((set, get) => ({
       const mergedProviders = PRECONFIGURED_PROVIDERS.map(p => ({
         ...p,
         apiKey: savedKeyMap.get(p.name) || p.apiKey,
+        // Always use the latest endpointUrl and modelId from code
+        endpointUrl: p.endpointUrl,
+        modelId: p.modelId,
       }));
       set({
         themeName: saved.themeName || "blue",
