@@ -22,7 +22,17 @@ export function buildPresentationPrompt(options: {
 
 Your response MUST be valid JSON only — no markdown, no code fences, no explanation text outside the JSON.
 
-You MUST use a variety of slide layouts to keep the presentation visually engaging. Do not use the same layout type for more than 2 consecutive slides.`;
+You MUST use a variety of slide layouts to keep the presentation visually engaging. Do not use the same layout type for more than 2 consecutive slides.
+
+IMPORTANT DESIGN RULES:
+- Prefer stats slides with compelling numbers when data supports it
+- Use key_points layout for comparison or feature slides
+- Use flow layout for processes, timelines, or sequential steps
+- Use two_column when you can pair text with a visual emoji
+- Use quote slides for impactful statements, conclusions, or thought-provoking ideas
+- Keep bullet points concise (under 12 words each)
+- Make titles punchy and action-oriented
+- Vary your layouts — aim for 4+ different layout types in any presentation`;
 
   const userPrompt = `Convert the following text into a structured presentation.
 

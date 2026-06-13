@@ -417,7 +417,7 @@ export default function Home() {
   );
 }
 
-/* ===== Slide Preview Component ===== */
+/* ===== Slide Preview Component (Enhanced) ===== */
 function SlidePreview({ slide, index, total, themeName, styleName }: { slide: Slide; index: number; total: number; themeName: ThemeName; styleName: StyleName }) {
   const theme = THEMES[themeName];
   const style = VISUAL_STYLES[styleName];
@@ -427,138 +427,258 @@ function SlidePreview({ slide, index, total, themeName, styleName }: { slide: Sl
 
   const decor = style.useDecorations ? (
     <>
-      <div className="decorative-circle" style={{ width: 300, height: 300, top: -100, right: -80, background: theme.primary }} />
-      <div className="decorative-circle" style={{ width: 200, height: 200, bottom: -60, left: -40, background: theme.secondary }} />
+      <div className="decorative-circle" style={{ width: 350, height: 350, top: -120, right: -100, background: theme.primary }} />
+      <div className="decorative-circle" style={{ width: 250, height: 250, bottom: -80, left: -60, background: theme.secondary }} />
+      {/* Subtle grid lines */}
+      <div style={{
+        position: "absolute", inset: 0, opacity: 0.02, pointerEvents: "none",
+        backgroundImage: `linear-gradient(${theme.primary}33 1px, transparent 1px), linear-gradient(90deg, ${theme.primary}33 1px, transparent 1px)`,
+        backgroundSize: "40px 40px"
+      }} />
     </>
   ) : null;
 
-  const footer = <div className="slide-footer" style={{ color: theme.text }}>{index + 1} / {total}</div>;
+  const footer = (
+    <div className="slide-footer" style={{ color: theme.text }}>
+      {index + 1} / {total}
+    </div>
+  );
+
+  // Small colored icon badges for key points
+  const iconColors = [theme.primary, theme.secondary, theme.accent, "#f59e0b"];
 
   switch (slide.layout) {
     case "title":
       return (
         <div className="slide-inner title-slide" style={{ ...bgStyle, color: theme.text, padding: style.padding }}>
           {decor}
-          <div style={{ position: "relative", zIndex: 1 }}>
-            <h1 style={{ fontSize: style.titleSize, fontWeight: 800, lineHeight: 1.15, background: gradient, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text", marginBottom: 16 }}>
+          {/* Large subtle logo shape */}
+          <div style={{
+            position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)",
+            width: 280, height: 280, borderRadius: "50%",
+            border: `1px solid ${theme.primary}15`, pointerEvents: "none"
+          }} />
+          <div style={{
+            position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)",
+            width: 200, height: 200, borderRadius: "50%",
+            border: `1px solid ${theme.primary}10`, pointerEvents: "none"
+          }} />
+          <div style={{ position: "relative", zIndex: 1, animation: "titleReveal 0.5s ease-out" }}>
+            <div style={{ width: 50, height: 4, background: gradient, borderRadius: 2, margin: "0 auto 20px" }} />
+            <h1 style={{
+              fontSize: style.titleSize, fontWeight: 800, lineHeight: 1.15,
+              background: gradient, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
+              backgroundClip: "text", marginBottom: 20, letterSpacing: "-0.02em"
+            }}>
               {slide.title}
             </h1>
-            {slide.subtitle && <p style={{ fontSize: 18, color: theme.textMuted, maxWidth: 500 }}>{slide.subtitle}</p>}
+            {slide.subtitle && (
+              <p style={{ fontSize: 18, color: theme.textMuted, maxWidth: 500, margin: "0 auto", lineHeight: 1.6 }}>
+                {slide.subtitle}
+              </p>
+            )}
           </div>
+          <div className="accent-line" style={{ color: theme.primary }} />
           {footer}
         </div>
       );
+
     case "section":
       return (
         <div className="slide-inner" style={{ ...bgStyle, color: theme.text, padding: style.padding, justifyContent: "center" }}>
           {decor}
           <div style={{ position: "relative", zIndex: 1 }}>
-            <div style={{ width: 60, height: 4, background: gradient, borderRadius: 2, marginBottom: 20 }} />
+            <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 24 }}>
+              <div style={{ width: 48, height: 4, background: gradient, borderRadius: 2 }} />
+              <div style={{ width: 8, height: 8, borderRadius: "50%", background: theme.primary, opacity: 0.5 }} />
+            </div>
             <h1 style={{ fontSize: style.titleSize, fontWeight: 800, letterSpacing: "-0.03em" }}>{slide.title}</h1>
-            {slide.subtitle && <p style={{ fontSize: 18, color: theme.textMuted, marginTop: 12 }}>{slide.subtitle}</p>}
+            {slide.subtitle && <p style={{ fontSize: 18, color: theme.textMuted, marginTop: 14, maxWidth: 500, lineHeight: 1.6 }}>{slide.subtitle}</p>}
           </div>
+          <div className="accent-line" style={{ color: theme.secondary }} />
           {footer}
         </div>
       );
+
     case "bullets":
       return (
         <div className="slide-inner" style={{ ...bgStyle, color: theme.text, padding: style.padding }}>
           {decor}
-          <h2 style={{ fontSize: style.headingSize, fontWeight: 700, position: "relative", zIndex: 1 }}>{slide.title}</h2>
+          <div style={{ position: "relative", zIndex: 1 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 8 }}>
+              <div style={{ width: 28, height: 3, background: gradient, borderRadius: 2 }} />
+            </div>
+            <h2 style={{ fontSize: style.headingSize, fontWeight: 700 }}>{slide.title}</h2>
+          </div>
           <div className="slide-body" style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", position: "relative", zIndex: 1 }}>
             <ul className="bullet-list">
-              {(slide.bullets || []).map((b, i) => <li key={i} style={{ color: theme.text, fontSize: style.bodySize }}>{b}</li>)}
+              {(slide.bullets || []).map((b, i) => (
+                <li key={i} style={{ color: theme.text, fontSize: style.bodySize }}>{b}</li>
+              ))}
             </ul>
           </div>
+          <div className="accent-line" style={{ color: theme.primary }} />
           {footer}
         </div>
       );
+
     case "two_column":
       return (
         <div className="slide-inner" style={{ ...bgStyle, color: theme.text, padding: style.padding }}>
           {decor}
-          <h2 style={{ fontSize: style.headingSize, fontWeight: 700, position: "relative", zIndex: 1 }}>{slide.title}</h2>
+          <div style={{ position: "relative", zIndex: 1 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 8 }}>
+              <div style={{ width: 28, height: 3, background: gradient, borderRadius: 2 }} />
+            </div>
+            <h2 style={{ fontSize: style.headingSize, fontWeight: 700 }}>{slide.title}</h2>
+          </div>
           <div className="two-column" style={{ position: "relative", zIndex: 1 }}>
             <ul className="bullet-list">
               {(slide.left?.bullets || []).map((b, i) => <li key={i} style={{ color: theme.text, fontSize: style.bodySize }}>{b}</li>)}
             </ul>
             <div className="visual-box" style={{ borderColor: theme.border }}>
-              <span style={{ fontSize: 48, marginBottom: 10 }}>{slide.right?.visual || "📊"}</span>
-              {slide.right?.label && <span style={{ fontSize: 14, color: theme.textMuted, textAlign: "center" }}>{slide.right.label}</span>}
+              <span style={{ fontSize: 56, marginBottom: 12, filter: "drop-shadow(0 4px 8px rgba(0,0,0,0.3))" }}>
+                {slide.right?.visual || "📊"}
+              </span>
+              {slide.right?.label && (
+                <span style={{ fontSize: 14, color: theme.textMuted, textAlign: "center", lineHeight: 1.5 }}>
+                  {slide.right.label}
+                </span>
+              )}
             </div>
           </div>
+          <div className="accent-line" style={{ color: theme.primary }} />
           {footer}
         </div>
       );
+
     case "stats":
       return (
         <div className="slide-inner" style={{ ...bgStyle, color: theme.text, padding: style.padding }}>
           {decor}
-          <h2 style={{ fontSize: style.headingSize, fontWeight: 700, position: "relative", zIndex: 1 }}>{slide.title}</h2>
+          <div style={{ position: "relative", zIndex: 1 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 8 }}>
+              <div style={{ width: 28, height: 3, background: gradient, borderRadius: 2 }} />
+            </div>
+            <h2 style={{ fontSize: style.headingSize, fontWeight: 700 }}>{slide.title}</h2>
+          </div>
           <div className="stat-grid" style={{ position: "relative", zIndex: 1 }}>
             {(slide.stats || []).map((s, i) => (
-              <div key={i} className="stat-card" style={{ borderColor: theme.border }}>
-                <div style={{ fontSize: 36, fontWeight: 800, background: gradient, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text", marginBottom: 6 }}>{s.number}</div>
-                <div style={{ fontSize: 13, color: theme.textMuted }}>{s.label}</div>
+              <div key={i} className="stat-card" style={{ borderColor: `${theme.primary}20` }}>
+                <div style={{
+                  fontSize: 40, fontWeight: 800,
+                  background: gradient, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
+                  backgroundClip: "text", marginBottom: 8, lineHeight: 1
+                }}>
+                  {s.number}
+                </div>
+                <div style={{ fontSize: 13, color: theme.textMuted, lineHeight: 1.4 }}>{s.label}</div>
+                {/* Bottom accent bar */}
+                <div style={{
+                  position: "absolute", bottom: 0, left: "25%", right: "25%",
+                  height: 3, background: gradient, borderRadius: "3px 3px 0 0", opacity: 0.5
+                }} />
               </div>
             ))}
           </div>
+          <div className="accent-line" style={{ color: theme.secondary }} />
           {footer}
         </div>
       );
+
     case "key_points":
       return (
         <div className="slide-inner" style={{ ...bgStyle, color: theme.text, padding: style.padding }}>
           {decor}
-          <h2 style={{ fontSize: style.headingSize, fontWeight: 700, position: "relative", zIndex: 1 }}>{slide.title}</h2>
+          <div style={{ position: "relative", zIndex: 1 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 8 }}>
+              <div style={{ width: 28, height: 3, background: gradient, borderRadius: 2 }} />
+            </div>
+            <h2 style={{ fontSize: style.headingSize, fontWeight: 700 }}>{slide.title}</h2>
+          </div>
           <div className="key-points" style={{ position: "relative", zIndex: 1 }}>
             {(slide.points || []).map((p, i) => (
-              <div key={i} className="key-point-card" style={{ borderColor: theme.border }}>
-                <h4 style={{ fontSize: 15, fontWeight: 600, color: theme.accent, marginBottom: 6 }}>{p.title}</h4>
-                <p style={{ fontSize: 13, color: theme.textMuted, lineHeight: 1.5 }}>{p.description}</p>
+              <div key={i} className="key-point-card" style={{ borderColor: `${iconColors[i % 4]}20`, position: "relative", overflow: "hidden" }}>
+                {/* Colored left accent */}
+                <div style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: 3, background: iconColors[i % 4], borderRadius: "3px 0 0 3px" }} />
+                <h4 style={{ fontSize: 15, fontWeight: 600, color: iconColors[i % 4], marginBottom: 8 }}>{p.title}</h4>
+                <p style={{ fontSize: 13, color: theme.textMuted, lineHeight: 1.6 }}>{p.description}</p>
               </div>
             ))}
           </div>
+          <div className="accent-line" style={{ color: theme.primary }} />
           {footer}
         </div>
       );
+
     case "flow":
       return (
         <div className="slide-inner" style={{ ...bgStyle, color: theme.text, padding: style.padding }}>
           {decor}
-          <h2 style={{ fontSize: style.headingSize, fontWeight: 700, position: "relative", zIndex: 1 }}>{slide.title}</h2>
+          <div style={{ position: "relative", zIndex: 1 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 8 }}>
+              <div style={{ width: 28, height: 3, background: gradient, borderRadius: 2 }} />
+            </div>
+            <h2 style={{ fontSize: style.headingSize, fontWeight: 700 }}>{slide.title}</h2>
+          </div>
           <div className="flow-row" style={{ position: "relative", zIndex: 1 }}>
             {(slide.steps || []).map((s, i) => (
               <div key={i} style={{ display: "flex", alignItems: "center" }}>
-                <div className="diagram-box" style={{ borderColor: theme.border, color: theme.text }}>
-                  <div style={{ fontSize: 20, fontWeight: 700, background: gradient, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text", marginBottom: 4 }}>{i + 1}</div>
-                  <div style={{ fontSize: 14 }}>{s}</div>
+                <div className="diagram-box" style={{ borderColor: `${theme.primary}20`, color: theme.text, position: "relative", overflow: "hidden" }}>
+                  {/* Step number badge */}
+                  <div style={{
+                    display: "inline-flex", alignItems: "center", justifyContent: "center",
+                    width: 36, height: 36, borderRadius: "50%", background: gradient,
+                    marginBottom: 10, fontSize: 16, fontWeight: 700, color: "#fff",
+                    boxShadow: `0 4px 12px ${theme.primary}40`
+                  }}>
+                    {i + 1}
+                  </div>
+                  <div style={{ fontSize: 13, lineHeight: 1.4 }}>{s}</div>
                 </div>
-                {i < (slide.steps?.length || 0) - 1 && <span className="diagram-arrow" style={{ color: theme.textMuted }}>→</span>}
+                {i < (slide.steps?.length || 0) - 1 && (
+                  <span className="diagram-arrow" style={{ color: theme.primary, opacity: 0.4 }}>→</span>
+                )}
               </div>
             ))}
           </div>
+          <div className="accent-line" style={{ color: theme.secondary }} />
           {footer}
         </div>
       );
+
     case "quote":
       return (
         <div className="slide-inner" style={{ ...bgStyle, color: theme.text, padding: style.padding, justifyContent: "center", alignItems: "center", textAlign: "center" }}>
           {decor}
-          <div style={{ position: "relative", zIndex: 1, maxWidth: 600 }}>
-            <div style={{ fontSize: 64, opacity: 0.15, lineHeight: 1, marginBottom: -20 }}>&ldquo;</div>
-            <p style={{ fontSize: 22, fontStyle: "italic", fontWeight: 300, lineHeight: 1.6 }}>{slide.quote}</p>
-            {slide.attribution && <p style={{ marginTop: 16, fontSize: 14, color: theme.textMuted }}>— {slide.attribution}</p>}
+          {/* Large decorative quote mark */}
+          <div className="quote-mark" style={{ color: theme.primary }}>&ldquo;</div>
+          <div style={{ position: "relative", zIndex: 1, maxWidth: 620 }}>
+            <div style={{
+              width: 40, height: 3, background: gradient, borderRadius: 2, margin: "0 auto 28px"
+            }} />
+            <p style={{ fontSize: 22, fontStyle: "italic", fontWeight: 300, lineHeight: 1.7, letterSpacing: "0.01em" }}>
+              {slide.quote}
+            </p>
+            {slide.attribution && (
+              <div style={{ marginTop: 24, display: "flex", alignItems: "center", justifyContent: "center", gap: 10 }}>
+                <div style={{ width: 24, height: 1, background: theme.textMuted, opacity: 0.3 }} />
+                <p style={{ fontSize: 14, color: theme.textMuted }}>{slide.attribution}</p>
+                <div style={{ width: 24, height: 1, background: theme.textMuted, opacity: 0.3 }} />
+              </div>
+            )}
           </div>
+          <div className="accent-line" style={{ color: theme.primary }} />
           {footer}
         </div>
       );
+
     default:
       return (
         <div className="slide-inner" style={{ ...bgStyle, color: theme.text, padding: style.padding }}>
           {decor}
-          <h2 style={{ fontSize: style.headingSize, fontWeight: 700 }}>{slide.title}</h2>
-          <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center" }}>
+          <h2 style={{ fontSize: style.headingSize, fontWeight: 700, position: "relative", zIndex: 1 }}>{slide.title}</h2>
+          <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", position: "relative", zIndex: 1 }}>
             <ul className="bullet-list">
               {(slide.bullets || []).map((b, i) => <li key={i}>{b}</li>)}
             </ul>
