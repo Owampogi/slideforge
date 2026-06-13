@@ -1,36 +1,113 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# SlideForge 🎯
 
-## Getting Started
+**AI-Powered Presentation Generator** — Transform any text into professional slide decks with presenter scripts, powered by MIMO (Xiaomi) AI.
 
-First, run the development server:
+![Next.js](https://img.shields.io/badge/Next.js-16-black)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-blue)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind-4-38bdf8)
+
+## ✨ Features
+
+- **Text → Slides**: Paste any text, article, or topic and get a complete presentation
+- **8 Slide Layouts**: Title, bullets, two-column, stats, key points, flow, quote, section
+- **Presenter Scripts**: Auto-generated speaker notes with transitions for each slide
+- **PPTX Export**: Download real `.pptx` files (openable in PowerPoint, Google Slides, Keynote)
+- **Script Download**: Get a presenter script as `.txt`
+- **6 Color Themes**: Blue, green, warm, sunset, dark, ocean
+- **5 Visual Styles**: Modern, minimal, bold, corporate, creative
+- **Multi-Provider**: Works with MIMO, Groq, Together.ai, Ollama, and any OpenAI-compatible API
+- **Local Models**: Use Ollama for 100% free, offline generation
+
+## 🚀 Quick Start
+
+### 1. Clone & Install
+
+```bash
+git clone https://github.com/YOUR_USERNAME/slideforge.git
+cd slideforge
+npm install
+```
+
+### 2. Set Up API Key
+
+```bash
+cp .env.example .env.local
+```
+
+Edit `.env.local` and add your MIMO API key:
+
+```
+MIMO_API_KEY=sk-your-mimo-api-key-here
+```
+
+**Get a MIMO key:** Sign up at [Xiaomi MIMO](https://xiaomimimo.com) and get an API key from the Token Plan dashboard.
+
+### 3. Run
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 4. Generate!
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. Paste your text in the left panel
+2. Click **Generate Presentation**
+3. Preview slides → Download PPTX or Script
 
-## Learn More
+## 🤖 Supported AI Providers
 
-To learn more about Next.js, take a look at the following resources:
+| Provider | Model | Cost | Setup |
+|----------|-------|------|-------|
+| **MIMO (Xiaomi)** | `mimo-v2.5-pro` | Token-based | Add API key to `.env.local` |
+| **Ollama (Local)** | `llama3.1:8b` | Free | Install [Ollama](https://ollama.com) |
+| **Groq** | `llama-3.3-70b-versatile` | Free tier | Get key at [groq.com](https://console.groq.com) |
+| **Together.ai** | `Llama-3.3-70B` | Free tier | Get key at [together.ai](https://together.ai) |
+| **OpenRouter** | Various | Free models | Get key at [openrouter.ai](https://openrouter.ai) |
+| **Google Gemini** | `gemini-2.0-flash` | Free tier | Get key at [AI Studio](https://aistudio.google.com) |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Switch providers in Settings (⚙) — no code changes needed.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 📁 Project Structure
 
-## Deploy on Vercel
+```
+slideforge/
+├── src/
+│   ├── app/
+│   │   ├── page.tsx              # Main 3-panel UI
+│   │   ├── layout.tsx            # Root layout
+│   │   ├── globals.css           # Tailwind + slide styles
+│   │   └── api/
+│   │       ├── generate/route.ts # AI generation endpoint
+│   │       └── export/pptx/      # PPTX export endpoint
+│   ├── lib/
+│   │   ├── ai/
+│   │   │   ├── provider.ts       # AI provider abstraction
+│   │   │   └── prompts.ts        # Generation prompts
+│   │   └── presentation/
+│   │       └── themes.ts         # Themes & visual styles
+│   ├── store/
+│   │   └── presentation-store.ts # Zustand state
+│   └── types/
+│       ├── slide.ts              # Slide types
+│       └── ai-provider.ts        # Provider types
+└── docs/
+    ├── PRD.md                    # Product requirements
+    ├── ARCHITECTURE.md           # Technical architecture
+    └── RESEARCH.md               # MIMO ecosystem research
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 🛠 Tech Stack
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **Framework**: Next.js 16 (App Router)
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS 4
+- **State**: Zustand
+- **AI**: MIMO API (OpenAI-compatible)
+- **Export**: pptxgenjs
+- **Icons**: Lucide React
+
+## 📄 License
+
+MIT
