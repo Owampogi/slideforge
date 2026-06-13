@@ -1,6 +1,6 @@
 # SlideForge 🎯
 
-**AI-Powered Presentation Generator** — Transform any text into professional slide decks with presenter scripts, powered by MIMO (Xiaomi) AI.
+**AI-Powered Presentation Generator** — Transform any text into professional slide decks with presenter scripts.
 
 ![Next.js](https://img.shields.io/badge/Next.js-16-black)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-blue)
@@ -15,7 +15,7 @@
 - **Script Download**: Get a presenter script as `.txt`
 - **6 Color Themes**: Blue, green, warm, sunset, dark, ocean
 - **5 Visual Styles**: Modern, minimal, bold, corporate, creative
-- **Multi-Provider**: Works with MIMO, Groq, Together.ai, Ollama, and any OpenAI-compatible API
+- **Multi-Provider**: Works with Google Gemini, Groq, MIMO, Ollama, and any OpenAI-compatible API
 - **Local Models**: Use Ollama for 100% free, offline generation
 
 ## 🚀 Quick Start
@@ -23,24 +23,27 @@
 ### 1. Clone & Install
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/slideforge.git
+git clone https://github.com/Owampogi/slideforge.git
 cd slideforge
 npm install
 ```
 
-### 2. Set Up API Key
+### 2. Set Up API Key (Free)
 
 ```bash
 cp .env.example .env.local
 ```
 
-Edit `.env.local` and add your MIMO API key:
+Edit `.env.local` and add your free Google Gemini API key:
 
 ```
-MIMO_API_KEY=sk-your-mimo-api-key-here
+GEMINI_API_KEY=your-gemini-api-key-here
 ```
 
-**Get a MIMO key:** Sign up at [Xiaomi MIMO](https://xiaomimimo.com) and get an API key from the Token Plan dashboard.
+**Get a FREE Gemini key (recommended):**
+1. Go to [Google AI Studio](https://aistudio.google.com/app/apikey)
+2. Click "Create API Key"
+3. Copy the key into `.env.local`
 
 ### 3. Run
 
@@ -60,14 +63,14 @@ Open [http://localhost:3000](http://localhost:3000)
 
 | Provider | Model | Cost | Setup |
 |----------|-------|------|-------|
-| **MIMO (Xiaomi)** | `mimo-v2.5-pro` | Token-based | Add API key to `.env.local` |
-| **Ollama (Local)** | `llama3.1:8b` | Free | Install [Ollama](https://ollama.com) |
+| **Google Gemini** ⭐ | `gemini-2.0-flash` | Free tier | Get key at [AI Studio](https://aistudio.google.com) |
 | **Groq** | `llama-3.3-70b-versatile` | Free tier | Get key at [groq.com](https://console.groq.com) |
-| **Together.ai** | `Llama-3.3-70B` | Free tier | Get key at [together.ai](https://together.ai) |
 | **OpenRouter** | Various | Free models | Get key at [openrouter.ai](https://openrouter.ai) |
-| **Google Gemini** | `gemini-2.0-flash` | Free tier | Get key at [AI Studio](https://aistudio.google.com) |
+| **MIMO (Xiaomi)** | `mimo-v2.5-pro` | Token-based | Get key at [MIMO](https://xiaomimimo.com) |
+| **Together.ai** | `Llama-3.3-70B` | Free tier | Get key at [together.ai](https://together.ai) |
+| **Ollama (Local)** | `llama3.1:8b` | Free | Install [Ollama](https://ollama.com) |
 
-Switch providers in Settings (⚙) — no code changes needed.
+Switch providers in Settings (⚙) — no code changes needed. Enter your API key in the app's Settings modal.
 
 ## 📁 Project Structure
 
@@ -95,7 +98,7 @@ slideforge/
 └── docs/
     ├── PRD.md                    # Product requirements
     ├── ARCHITECTURE.md           # Technical architecture
-    └── RESEARCH.md               # MIMO ecosystem research
+    └── RESEARCH.md               # AI ecosystem research
 ```
 
 ## 🛠 Tech Stack
@@ -104,7 +107,7 @@ slideforge/
 - **Language**: TypeScript
 - **Styling**: Tailwind CSS 4
 - **State**: Zustand
-- **AI**: MIMO API (OpenAI-compatible)
+- **AI**: OpenAI-compatible API (Gemini, Groq, etc.)
 - **Export**: pptxgenjs
 - **Icons**: Lucide React
 

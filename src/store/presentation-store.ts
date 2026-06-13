@@ -118,10 +118,22 @@ export const usePresentationStore = create<PresentationState>((set, get) => ({
   loadFromStorage: () => {
     const saved = loadSettings();
     if (saved) {
+      // Always use the latest provider list from code (so new providers appear)
+      // but merge saved API keys into them
+      const savedKeyMap = new Map<string, string>();
+      if (saved.providers) {
+        for (const p of saved.providers) {
+          if (p.apiKey) savedKeyMap.set(p.name, p.apiKey);
+        }
+      }
+      const mergedProviders = PRECONFIGURED_PROVIDERS.map(p => ({
+        ...p,
+        apiKey: savedKeyMap.get(p.name) || p.apiKey,
+      }));
       set({
         themeName: saved.themeName || "blue",
         styleName: saved.styleName || "modern",
-        providers: saved.providers || [...PRECONFIGURED_PROVIDERS],
+        providers: mergedProviders,
         activeProviderName: saved.activeProviderName || PRECONFIGURED_PROVIDERS[0]?.name || "",
       });
     }

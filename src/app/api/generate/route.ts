@@ -24,10 +24,18 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "AI provider configuration is required" }, { status: 400 });
     }
 
-    // Use env var as fallback for API key
+    // Use env var as fallback for API key (provider-specific)
+    const envKeyMap: Record<string, string> = {
+      "Google Gemini (Free)": process.env.GEMINI_API_KEY || "",
+      "Groq (Free Tier)": process.env.GROQ_API_KEY || "",
+      "MIMO (Xiaomi Token Plan)": process.env.MIMO_API_KEY || "",
+      "MIMO v2.5 Standard": process.env.MIMO_API_KEY || "",
+      "MIMO v2 Pro": process.env.MIMO_API_KEY || "",
+    };
+    const fallbackKey = envKeyMap[provider.name] || "";
     const providerWithKey = {
       ...provider,
-      apiKey: provider.apiKey || process.env.MIMO_API_KEY || "",
+      apiKey: provider.apiKey || fallbackKey,
     };
     const aiProvider = new OpenAICompatProvider(providerWithKey);
     const prompts = buildPresentationPrompt({ title, text, slideCount, style, audience });
