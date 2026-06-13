@@ -163,7 +163,7 @@ export async function POST(request: NextRequest) {
       response = await aiProvider.complete({
         systemPrompt: prompts.systemPrompt,
         userPrompt: prompts.userPrompt,
-        maxTokens: 16384,
+        maxTokens: 100000,
         temperature: 0.7,
         jsonMode: true,
       });
@@ -174,7 +174,7 @@ export async function POST(request: NextRequest) {
         response = await aiProvider.complete({
           systemPrompt: prompts.systemPrompt,
           userPrompt: prompts.userPrompt,
-          maxTokens: 16384,
+          maxTokens: 100000,
           temperature: 0.7,
           jsonMode: false,
         });
