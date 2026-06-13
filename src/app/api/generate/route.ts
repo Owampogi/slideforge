@@ -4,6 +4,71 @@ import { buildPresentationPrompt } from "@/lib/ai/prompts";
 import type { AiProviderSetting } from "@/types/ai-provider";
 import type { StyleName } from "@/types/slide";
 
+/**
+ * Attempt to repair truncated or corrupted JSON from AI responses.
+ * Common cases: response cut off mid-string, missing closing braces/brackets.
+ */
+function parseRepairJson(raw: string): Record<string, unknown> {
+  // Step 1: Remove any trailing incomplete content after the last valid JSON structure
+  let cleaned = raw.trim();
+
+  // Step 2: Close any unclosed strings (add closing quote)
+  let inString = false;
+  let escapeNext = false;
+  let lastStringStart = -1;
+  for (let i = 0; i < cleaned.length; i++) {
+    const ch = cleaned[i];
+    if (escapeNext) { escapeNext = false; continue; }
+    if (ch === '\\') { escapeNext = true; continue; }
+    if (ch === '"') {
+      if (inString) {
+        inString = false;
+      } else {
+        inString = true;
+        lastStringStart = i;
+      }
+    }
+  }
+
+  // If we're in an unclosed string, truncate from last complete string end
+  if (inString && lastStringStart >= 0) {
+    // Find the last complete string value (look for last unescaped quote followed by , or })
+    let lastCompletePos = cleaned.lastIndexOf('",');
+    if (lastCompletePos < 0) lastCompletePos = cleaned.lastIndexOf('"}');
+    if (lastCompletePos < 0) lastCompletePos = cleaned.lastIndexOf('"]');
+    if (lastCompletePos >= 0) {
+      cleaned = cleaned.substring(0, lastCompletePos + 1);
+    }
+  }
+
+  // Step 3: Count and balance brackets/braces
+  let openBraces = 0;
+  let openBrackets = 0;
+  inString = false;
+  escapeNext = false;
+
+  for (let i = 0; i < cleaned.length; i++) {
+    const ch = cleaned[i];
+    if (escapeNext) { escapeNext = false; continue; }
+    if (ch === '\\') { escapeNext = true; continue; }
+    if (ch === '"') { inString = !inString; continue; }
+    if (inString) continue;
+    if (ch === '{') openBraces++;
+    if (ch === '}') openBraces--;
+    if (ch === '[') openBrackets++;
+    if (ch === ']') openBrackets--;
+  }
+
+  // Remove trailing comma if present
+  cleaned = cleaned.replace(/,\s*$/, '');
+
+  // Close missing brackets and braces
+  for (let i = 0; i < openBrackets; i++) cleaned += ']';
+  for (let i = 0; i < openBraces; i++) cleaned += '}';
+
+  return JSON.parse(cleaned);
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -47,7 +112,7 @@ export async function POST(request: NextRequest) {
       response = await aiProvider.complete({
         systemPrompt: prompts.systemPrompt,
         userPrompt: prompts.userPrompt,
-        maxTokens: 8192,
+        maxTokens: 16384,
         temperature: 0.7,
         jsonMode: true,
       });
@@ -58,7 +123,7 @@ export async function POST(request: NextRequest) {
         response = await aiProvider.complete({
           systemPrompt: prompts.systemPrompt,
           userPrompt: prompts.userPrompt,
-          maxTokens: 8192,
+          maxTokens: 16384,
           temperature: 0.7,
           jsonMode: false,
         });
@@ -68,24 +133,34 @@ export async function POST(request: NextRequest) {
     }
     const generationTime = Date.now() - startTime;
 
-    // Parse the JSON response
+    // Parse the JSON response with repair logic
     let presentationData;
     try {
       // Try direct parse first
       presentationData = JSON.parse(response.content);
     } catch {
-      // Try to extract JSON from markdown code fences
-      const jsonMatch = response.content.match(/```(?:json)?\s*([\s\S]*?)```/);
-      if (jsonMatch) {
-        presentationData = JSON.parse(jsonMatch[1].trim());
-      } else {
-        // Try to find JSON object in the response
-        const braceMatch = response.content.match(/\{[\s\S]*\}/);
-        if (braceMatch) {
-          presentationData = JSON.parse(braceMatch[0]);
+      try {
+        // Try to extract JSON from markdown code fences
+        const jsonMatch = response.content.match(/```(?:json)?\s*([\s\S]*?)```/);
+        if (jsonMatch) {
+          presentationData = JSON.parse(jsonMatch[1].trim());
         } else {
-          throw new Error("AI returned invalid JSON format");
+          // Try to find JSON object in the response
+          const braceMatch = response.content.match(/\{[\s\S]*\}/);
+          if (braceMatch) {
+            try {
+              presentationData = JSON.parse(braceMatch[0]);
+            } catch {
+              // Try to repair truncated/corrupted JSON
+              presentationData = parseRepairJson(braceMatch[0]);
+            }
+          } else {
+            throw new Error("AI returned invalid JSON format");
+          }
         }
+      } catch (parseErr) {
+        if (parseErr instanceof Error && parseErr.message.includes("AI returned")) throw parseErr;
+        throw new Error("AI returned malformed JSON. Try reducing the number of slides or shortening your text.");
       }
     }
 
