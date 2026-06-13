@@ -6,13 +6,20 @@ import type { StyleName } from "@/types/slide";
 
 /**
  * Attempt to repair truncated or corrupted JSON from AI responses.
- * Common cases: response cut off mid-string, missing closing braces/brackets.
+ * Handles: truncated strings, missing closing braces/brackets,
+ * literal newlines inside strings, unescaped control chars.
  */
 function parseRepairJson(raw: string): Record<string, unknown> {
-  // Step 1: Remove any trailing incomplete content after the last valid JSON structure
   let cleaned = raw.trim();
 
-  // Step 2: Close any unclosed strings (add closing quote)
+  // Step 1: Escape literal newlines and tabs INSIDE string values
+  // Replace literal newlines within strings with \\n
+  cleaned = cleaned.replace(/("(?:[^"\\]|\\.)*")/g, (match) => {
+    return match.replace(/\n/g, '\\n').replace(/\r/g, '').replace(/\t/g, '\\t');
+  });
+
+  // Step 2: Remove any trailing incomplete content after the last valid JSON structure
+  // Step 3: Close any unclosed strings (add closing quote)
   let inString = false;
   let escapeNext = false;
   let lastStringStart = -1;
@@ -32,7 +39,6 @@ function parseRepairJson(raw: string): Record<string, unknown> {
 
   // If we're in an unclosed string, truncate from last complete string end
   if (inString && lastStringStart >= 0) {
-    // Find the last complete string value (look for last unescaped quote followed by , or })
     let lastCompletePos = cleaned.lastIndexOf('",');
     if (lastCompletePos < 0) lastCompletePos = cleaned.lastIndexOf('"}');
     if (lastCompletePos < 0) lastCompletePos = cleaned.lastIndexOf('"]');
@@ -41,7 +47,7 @@ function parseRepairJson(raw: string): Record<string, unknown> {
     }
   }
 
-  // Step 3: Count and balance brackets/braces
+  // Step 4: Count and balance brackets/braces
   let openBraces = 0;
   let openBrackets = 0;
   inString = false;
@@ -67,6 +73,50 @@ function parseRepairJson(raw: string): Record<string, unknown> {
   for (let i = 0; i < openBraces; i++) cleaned += '}';
 
   return JSON.parse(cleaned);
+}
+
+/**
+ * Extract and parse JSON from AI response with multiple fallback strategies.
+ */
+function extractJsonFromResponse(content: string): Record<string, unknown> {
+  // Strategy 1: Direct parse
+  try {
+    return JSON.parse(content);
+  } catch { /* continue */ }
+
+  // Strategy 2: Extract from markdown code fences
+  const jsonMatch = content.match(/```(?:json)?\s*([\s\S]*?)```/);
+  if (jsonMatch) {
+    try {
+      return JSON.parse(jsonMatch[1].trim());
+    } catch { /* continue */ }
+  }
+
+  // Strategy 3: Find JSON object in the response
+  const braceMatch = content.match(/\{[\s\S]*\}/);
+  if (braceMatch) {
+    try {
+      return JSON.parse(braceMatch[0]);
+    } catch { /* continue */ }
+
+    // Strategy 4: Repair the JSON
+    try {
+      return parseRepairJson(braceMatch[0]);
+    } catch { /* continue */ }
+
+    // Strategy 5: Try removing trailing incomplete slide objects
+    try {
+      // Find the last complete slide object by looking for the last "},
+      let partial = braceMatch[0];
+      const lastCompleteSlide = partial.lastIndexOf('},');
+      if (lastCompleteSlide > 0) {
+        partial = partial.substring(0, lastCompleteSlide + 1) + ']}';
+        return JSON.parse(partial);
+      }
+    } catch { /* continue */ }
+  }
+
+  throw new Error("AI returned invalid JSON format");
 }
 
 export async function POST(request: NextRequest) {
@@ -134,33 +184,23 @@ export async function POST(request: NextRequest) {
     }
     const generationTime = Date.now() - startTime;
 
-    // Parse the JSON response with repair logic
+    // Parse the JSON response with multiple repair strategies
     let presentationData;
     try {
-      // Try direct parse first
-      presentationData = JSON.parse(response.content);
-    } catch {
+      presentationData = extractJsonFromResponse(response.content);
+    } catch (parseErr) {
+      // If all parsing fails, retry once with lower temperature and explicit JSON-only instruction
+      console.warn("First parse failed, retrying with lower temperature...");
       try {
-        // Try to extract JSON from markdown code fences
-        const jsonMatch = response.content.match(/```(?:json)?\s*([\s\S]*?)```/);
-        if (jsonMatch) {
-          presentationData = JSON.parse(jsonMatch[1].trim());
-        } else {
-          // Try to find JSON object in the response
-          const braceMatch = response.content.match(/\{[\s\S]*\}/);
-          if (braceMatch) {
-            try {
-              presentationData = JSON.parse(braceMatch[0]);
-            } catch {
-              // Try to repair truncated/corrupted JSON
-              presentationData = parseRepairJson(braceMatch[0]);
-            }
-          } else {
-            throw new Error("AI returned invalid JSON format");
-          }
-        }
-      } catch (parseErr) {
-        if (parseErr instanceof Error && parseErr.message.includes("AI returned")) throw parseErr;
+        const retryResponse = await aiProvider.complete({
+          systemPrompt: prompts.systemPrompt + "\n\nCRITICAL: Your entire response must be a single valid JSON object. No text before or after. No markdown fences. No explanation. Just the raw JSON.",
+          userPrompt: prompts.userPrompt,
+          maxTokens: 16384,
+          temperature: 0.3,
+          jsonMode: false,
+        });
+        presentationData = extractJsonFromResponse(retryResponse.content);
+      } catch {
         throw new Error("AI returned malformed JSON. Try reducing the number of slides or shortening your text.");
       }
     }
