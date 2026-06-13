@@ -184,6 +184,11 @@ export async function POST(request: NextRequest) {
     }
     const generationTime = Date.now() - startTime;
 
+    // Debug: log first 500 chars of response to diagnose issues
+    console.log("AI response preview (first 500 chars):", response.content.substring(0, 500));
+    console.log("AI response length:", response.content.length);
+    console.log("AI model used:", response.model);
+
     // Parse the JSON response with multiple repair strategies
     let presentationData;
     try {

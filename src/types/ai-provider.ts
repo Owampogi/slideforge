@@ -48,7 +48,7 @@ export const PRECONFIGURED_PROVIDERS: AiProviderSetting[] = [
     providerType: "openai-compat",
     name: "MIMO (Xiaomi Token Plan)",
     endpointUrl: "https://token-plan-sgp.xiaomimimo.com/v1",
-    modelId: "mimo-v2.5-pro",
+    modelId: "mimo-v2.5",
     isActive: true,
   },
   {
