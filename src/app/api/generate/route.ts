@@ -194,15 +194,19 @@ export async function POST(request: NextRequest) {
     try {
       presentationData = extractJsonFromResponse(response.content);
     } catch (parseErr) {
-      // If all parsing fails, retry once with lower temperature and explicit JSON-only instruction
-      console.warn("First parse failed, retrying with lower temperature...");
+      // If Pro model JSON fails, retry with Standard (non-reasoning) model for reliable JSON
+      console.warn("Pro model parse failed, retrying with mimo-v2.5 (standard)...");
       try {
-        const retryResponse = await aiProvider.complete({
+        const fallbackProvider = new OpenAICompatProvider({
+          ...providerWithKey,
+          modelId: "mimo-v2.5",
+        });
+        const retryResponse = await fallbackProvider.complete({
           systemPrompt: prompts.systemPrompt + "\n\nCRITICAL: Your entire response must be a single valid JSON object. No text before or after. No markdown fences. No explanation. Just the raw JSON.",
           userPrompt: prompts.userPrompt,
           maxTokens: 16384,
           temperature: 0.3,
-          jsonMode: false,
+          jsonMode: true,
         });
         presentationData = extractJsonFromResponse(retryResponse.content);
       } catch {
