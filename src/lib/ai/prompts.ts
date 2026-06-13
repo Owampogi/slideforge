@@ -18,6 +18,14 @@ export function buildPresentationPrompt(options: {
     ? `The target audience is: ${audience}. Tailor the language and depth accordingly.`
     : "Use a general audience level.";
 
+  // Detect if this is training/educational content
+  const isTrainingContent = text.toLowerCase().includes("module") || 
+    text.toLowerCase().includes("lesson") || 
+    text.toLowerCase().includes("session") ||
+    text.toLowerCase().includes("course") ||
+    text.toLowerCase().includes("topics to cover") ||
+    text.toLowerCase().includes("curriculum");
+
   const systemPrompt = `You are an expert presentation designer and public speaking coach. You convert text into professional, visually structured presentations with presenter scripts.
 
 Your response MUST be valid JSON only — no markdown, no code fences, no explanation text outside the JSON.
@@ -34,6 +42,20 @@ IMPORTANT DESIGN RULES:
 - Make titles punchy and action-oriented
 - Vary your layouts — aim for 4+ different layout types in any presentation`;
 
+  const trainingInstruction = isTrainingContent ? `
+SPECIAL INSTRUCTIONS FOR TRAINING/EDUCATIONAL CONTENT:
+- Break down each topic/sub-topic into its own dedicated slide(s) with detailed explanation
+- Use section slides to separate major topics or modules
+- For each concept: create a slide that explains WHAT it is, WHY it matters, and HOW it works
+- Use flow diagrams for processes, timelines, or step-by-step procedures
+- Use key_points slides for comparing concepts (e.g., "X vs Y", "Good vs Bad candidates")
+- Use two_column slides to show theory on one side and examples on the other
+- Use stats slides for interesting facts or numbers related to the topic
+- Speaker notes should be detailed teaching scripts (3-5 sentences) — explain the concept as if teaching a student, include real-world examples and analogies
+- Each topic from the source material should have at minimum 2-3 slides: introduction, details, and practical application
+- Include "discussion prompt" or "hands-on activity" mentions in speaker_notes where appropriate
+- The presentation should serve as a complete lesson plan the presenter can follow` : "";
+
   const userPrompt = `Convert the following text into a structured presentation.
 
 TITLE: ${title || "Untitled Presentation"}
@@ -45,6 +67,7 @@ INSTRUCTIONS:
 ${slideCountInstruction}
 ${audienceInstruction}
 Visual style: ${style}
+${trainingInstruction}
 
 Return a JSON object with this EXACT structure:
 {
@@ -136,14 +159,14 @@ RULES:
 1. First slide MUST be type "title" with layout "title"
 2. Last slide MUST be type "ending" with layout "title"
 3. VARY layouts throughout — use ALL applicable layout types
-4. Every content slide MUST have "speaker_notes" (2-4 natural sentences)
+4. Every content slide MUST have "speaker_notes" (2-4 natural sentences, longer for training content)
 5. Every content slide SHOULD have a "transition" phrase
 6. Keep bullet points concise (under 15 words each)
 7. For "two_column" right.visual, use a single relevant emoji: 🤖📊🚀💡⚡🎯📈🔧🔬🌍🎓💻📱🎨🔑
 8. For "stats" layout, create compelling numbers that support the content
 9. For "flow" layout, show 3-5 clear process steps
 10. For "quote" layout, pick the most impactful statement
-11. Use "section" slides sparingly (0-2) for major topic transitions
+11. Use "section" slides to separate major topics or modules
 12. speaker_notes should be conversational, include context and transitions
 13. Return ONLY the JSON object`;
 
