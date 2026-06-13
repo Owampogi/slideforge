@@ -6,8 +6,9 @@ export function buildPresentationPrompt(options: {
   slideCount: string;
   style: StyleName;
   audience?: string;
+  language?: string;
 }): { systemPrompt: string; userPrompt: string } {
-  const { title, text, slideCount, style, audience } = options;
+  const { title, text, slideCount, style, audience, language } = options;
 
   const slideCountInstruction =
     slideCount === "auto"
@@ -56,6 +57,22 @@ SPECIAL INSTRUCTIONS FOR TRAINING/EDUCATIONAL CONTENT:
 - Include "discussion prompt" or "hands-on activity" mentions in speaker_notes where appropriate
 - The presentation should serve as a complete lesson plan the presenter can follow` : "";
 
+  const languageInstruction = language === "fil" ? `
+FILIPINO (TAGLISH) LANGUAGE INSTRUCTIONS:
+- Write ALL slide titles in English (for visual clarity in the presentation)
+- Write speaker_notes in Taglish (Filipino-English mix) — natural conversational Filipino with English technical terms
+- Use Pinoy-context examples and analogies that Filipinos can relate to:
+  * Reference local apps like GCash, Shopee, Grab, Maya instead of Venmo/Uber
+  * Use "pesos" instead of dollars for financial examples
+  * Reference Filipino work culture: "Filipino time", "pakikisama", "diskarte"
+  * Use familiar Pinoy scenarios: sari-sari store, jeepney, MRT/LRT, palengke, office sa Makati/BGC
+  * Reference local companies: Jollibee, SM, PLDT, Globe, BPI, BDO
+  * Use Filipino workplace terms: "boss", "ma'am/sir", "team lead", "sprint", "deadline"
+- Speaker_notes tone should be like a friendly Filipino colleague explaining something — approachable, may konting jokes, "par ganito...", "diba?", "so basically...", "gets mo?"
+- Include Filipino expressions naturally: "syempre", "actually", "basically", "parang", "yung tipong", "ganun din"
+- Keep bullet points and slide titles in English for professionalism
+- Example speaker note style: "Okay so dito sa slide na 'to, makikita natin yung process ng automation. Parang ganito — imagine mo yung GCash app mo, every time may transaction, nagno-notify ka automatically. Same concept lang yan sa workflow automation natin."` : "";
+
   const userPrompt = `Convert the following text into a structured presentation.
 
 TITLE: ${title || "Untitled Presentation"}
@@ -68,6 +85,7 @@ ${slideCountInstruction}
 ${audienceInstruction}
 Visual style: ${style}
 ${trainingInstruction}
+${languageInstruction}
 
 Return a JSON object with this EXACT structure:
 {

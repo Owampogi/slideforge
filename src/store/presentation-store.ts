@@ -18,6 +18,7 @@ interface PresentationState {
   styleName: StyleName;
   slideCount: string;
   audience: string;
+  language: string;
 
   // AI Provider
   providers: AiProviderSetting[];
@@ -40,6 +41,7 @@ interface PresentationState {
   setStyleName: (name: StyleName) => void;
   setSlideCount: (count: string) => void;
   setAudience: (audience: string) => void;
+  setLanguage: (language: string) => void;
   setProviders: (providers: AiProviderSetting[]) => void;
   setActiveProvider: (name: string) => void;
   addProvider: (provider: AiProviderSetting) => void;
@@ -74,6 +76,7 @@ export const usePresentationStore = create<PresentationState>((set, get) => ({
   styleName: "modern",
   slideCount: "10",
   audience: "",
+  language: "en",
   providers: [...PRECONFIGURED_PROVIDERS],
   activeProviderName: PRECONFIGURED_PROVIDERS[0]?.name || "", // MIMO default
   isGenerating: false,
@@ -98,6 +101,7 @@ export const usePresentationStore = create<PresentationState>((set, get) => ({
   setStyleName: (name) => { set({ styleName: name }); get().saveToStorage(); },
   setSlideCount: (slideCount) => set({ slideCount }),
   setAudience: (audience) => set({ audience }),
+  setLanguage: (language) => set({ language }),
   setProviders: (providers) => { set({ providers }); get().saveToStorage(); },
   setActiveProvider: (name) => { set({ activeProviderName: name }); get().saveToStorage(); },
   addProvider: (provider) => {

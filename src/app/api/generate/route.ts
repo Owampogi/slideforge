@@ -72,12 +72,13 @@ function parseRepairJson(raw: string): Record<string, unknown> {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { title, text, slideCount, style, audience, provider } = body as {
+    const { title, text, slideCount, style, audience, language, provider } = body as {
       title: string;
       text: string;
       slideCount: string;
       style: StyleName;
       audience?: string;
+      language?: string;
       provider: AiProviderSetting;
     };
 
@@ -103,7 +104,7 @@ export async function POST(request: NextRequest) {
       apiKey: provider.apiKey || fallbackKey,
     };
     const aiProvider = new OpenAICompatProvider(providerWithKey);
-    const prompts = buildPresentationPrompt({ title, text, slideCount, style, audience });
+    const prompts = buildPresentationPrompt({ title, text, slideCount, style, audience, language });
 
     const startTime = Date.now();
     // Try with jsonMode first, fall back without it if unsupported

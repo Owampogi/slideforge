@@ -55,6 +55,7 @@ export default function Home() {
           slideCount: store.slideCount,
           style: store.styleName,
           audience: store.audience,
+          language: store.language,
           provider: providerWithKey,
         }),
       });
@@ -228,6 +229,17 @@ export default function Home() {
                 placeholder="e.g., High school students"
                 className="w-full px-3 py-2 bg-[#242836] border border-[#2e3348] rounded-md text-sm text-gray-100 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 outline-none transition"
               />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-400 mb-1.5">Script Language</label>
+              <select
+                value={store.language} onChange={e => store.setLanguage(e.target.value)}
+                className="w-full px-3 py-2 bg-[#242836] border border-[#2e3348] rounded-md text-sm text-gray-100 outline-none"
+              >
+                <option value="en">English</option>
+                <option value="fil">Filipino (Taglish)</option>
+              </select>
+              <p className="text-[10px] text-gray-600 mt-1">Filipino uses Taglish with Pinoy examples</p>
             </div>
             <button
               onClick={handleGenerate}
